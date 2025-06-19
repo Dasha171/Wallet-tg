@@ -1,0 +1,493 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+@import url('https://fonts.googleapis.com/css2?family=Julius+Sans+One&display=swap');
+        
+:root {
+    --bg-color: #141414;
+    --text-color: #fff;
+    --card-bg: #252525;
+    --primary-color: #f89c1c;
+    --secondary-color: #666;
+    --green: #00c853;
+    --red: #d50000;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.balance-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.balance-title {
+    font-family: 'Julius Sans One', sans-serif;
+    font-size: 16px;
+    margin-bottom: 5px;
+    text-align: center;
+    padding-bottom: 10px;
+    text-align: start;
+}
+
+.balance-title2 {
+    font-family: 'Julius Sans One', sans-serif;
+    font-size: 16px;
+    margin-bottom: 5px;
+    text-align: center;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#qr{
+    text-align: center;
+    font-family: 'Julius Sans One', sans-serif;
+    font-weight: bold;
+}
+
+.eye-icon {
+    cursor: pointer;
+    width: 20px;
+    object-fit: contain;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.btn {
+    background-color: var(--card-bg);
+    color: var(--primary-color);
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 0 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 150px;
+    font-weight: lighter;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.btn img {
+    width: 25px;
+    margin-bottom: 2px;
+    height: 25px; /* Задаем одинаковую высоту всем картинкам */
+    object-fit: contain;/* Добавляем немного пространства между логотипом и текстом */
+}
+
+.btn span {
+    text-align: center;
+}
+.currencies {
+    background-color: var(--card-bg);
+    padding: 12px;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.currency {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+.currency:last-child {
+    border-bottom: none;
+}
+
+.currency-title {
+    font-family: 'Julius Sans One', sans-serif;
+    font-size: 16px;
+}
+
+.history-btn {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 15px;
+    padding-left: 20px;
+    border-radius: 10px;
+    text-align: start;
+    margin-top: 20px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 8px;
+    height: 60px;
+    font-weight: bold;
+}
+
+.modal {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    background: #1e1e1e;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+    transition: bottom 0.3s ease-in-out;
+    padding: 20px;
+    z-index: 100;
+}
+
+.modal.open {
+    bottom: 0;
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 10px;
+}
+
+.close-btn {
+    font-size: 24px;
+    color: #0095ff;
+    cursor: pointer;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Стили для списка пополнений */
+.wallet-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    color: #fff;
+}
+
+.wallet-item:not(:last-child) {
+    border-bottom: 1px solid #333;
+}
+
+.wallet-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.wallet-name {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.wallet-date {
+    font-size: 12px;
+    color: var(--secondary-color);
+}
+
+.wallet-amount {
+    font-weight: bold;
+    color: var(--green);
+}
+
+.currency-btc {
+    color: #f7931a;
+}
+
+.currency-usd {
+    color: var(--green);
+}
+
+#qrcode-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.qr-btn {
+    background: none;
+    color: var(--text-color);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-size: 14px;
+    gap: 7px;
+}
+
+.qr-btn img{
+    height: 23px;
+    object-fit: contain;
+}
+
+.container {
+    padding: 20px;
+}
+
+.add-wallet-btn {
+    width: 100%;
+    background: #ff9800;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    height: 60px;
+}
+.currency-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1e1e1e;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.currency-box img {
+    width: 22px;
+    height: 22px;
+}
+
+.currency-logo {
+    margin-right: 10px;
+}
+
+
+.currency-arrow {
+    width: 18px;
+    height: 6px;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+.currency-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    font-size: 16px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.currency-item:not(:last-child) {
+    border-bottom: 1px solid #333;
+}
+
+.currency-item img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+.currency-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1e1e1e;
+    border-radius: 15px 15px 0 0;
+    padding: 20px;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
+}
+.currency-modal.open {
+    transform: translateY(0);
+}
+
+.modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1e1e1e;
+    border-radius: 15px 15px 0 0;
+    padding: 20px;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.modal.open {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h2 {
+    font-size: 18px;
+}
+
+.wallet-action {
+    display: grid;
+    grid-template-columns: 40px 1fr 20px;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 0;
+    cursor: pointer;
+}
+
+.wallet-action:not(:last-child) {
+    border-bottom: 1px solid #333;
+}
+
+.wallet-icon {
+    width: 25px;
+    height: 20px;
+}
+
+.arrow-icon {
+    width: 10px;
+    height: 16px;
+}
+
+.wallet-texts {
+    display: flex;
+    flex-direction: column;
+}
+
+.wallet-title {
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+}
+
+.wallet-subtitle {
+    font-size: 12px;
+    color: #bbb;
+}
+
+.modal-body {
+    margin-top: 10px;
+}
+
+
+.close-btn {
+    color: #007bff;
+    cursor: pointer;
+    font-size: 24px;
+}
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: #333;
+    padding: 5px 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+.search-bar input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: white;
+    outline: none;
+    padding: 5px;
+}
+.search-bar .search-icon {
+    color: white;
+    padding-right: 7px;
+}
+
+.select-wallet {
+    display: flex;
+    justify-content: space-between; /* Текст слева, select справа */
+    align-items: center;
+    width: 100%;
+    padding: 10px 0;
+}
+
+
+select {
+    font-family: "Kantumruy", sans-serif;
+    font-size: 14px;
+    color: #8C8C8D;
+    background: none;
+    border: none;
+    outline: none;
+    appearance: none; /* Убираем стандартное оформление */
+    cursor: pointer;
+    padding-right: 20px;
+    position: relative;
+}
+
+/* Добавляем кастомную стрелку */
+.select-wallet {
+    position: relative;
+    padding-top: 20px;
+}
+
+.select-wallet select {
+    width: auto;
+    padding-right: 20px; /* Под стрелочку */
+}
+
+.select-wallet::after {
+    content: "▼"; /* Иконка стрелочки */
+    font-size: 12px;
+    color: #8C8C8D;
+    position: absolute;
+    right: 5px;
+    pointer-events: none;
+}
+
+.idea-wallet{
+    background-color: none;
+}
+
+@media (max-width: 500px) {
+    .history-btn {
+        width: auto;
+        margin: 20px auto;
+    }
+}
+

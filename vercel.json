@@ -1,0 +1,52 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "public/**/*",
+        "use": "@vercel/static"
+      },
+      {
+        "src": "api/bot.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/",
+        "dest": "/public/main.html"
+      },
+      {
+        "src": "/api/bot",
+        "dest": "/api/bot.js"
+      },
+      {
+        "src": "/style.css",
+        "dest": "/public/style.css"
+      },
+      {
+        "src": "/script.js",
+        "dest": "/public/script.js"
+      },
+      {
+        "src": "/main.html",
+        "dest": "/public/main.html"
+      },
+      {
+        "src": "/money.html",
+        "dest": "/public/money.html"
+      },
+      {
+        "src": "/replenish.html",
+        "dest": "/public/replenish.html"
+      },
+      {
+        "src": "/images/(.*)",
+        "dest": "/public/images/$1"
+      },
+          {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+    ]
+  }
+  

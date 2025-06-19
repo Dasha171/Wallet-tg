@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Пополнение</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand(); 
+</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Назад -->
+    <h3 id="qr">QR Code</h3>
+    <div class="container">
+        <div class="balance-title2">Отсканируйте чтобы поплнить</div>
+        
+        <!-- QR-код -->
+        <div id="qrcode-container">
+            <div id="qrcode"></div>
+        </div>
+
+        <!-- кнопки -->
+        <div class="buttons">
+            <div class="qr-btn" onclick="copyToClipboard()">
+                <img src="./images/icon1.png" width="20"> Скопировать
+            </div>
+            <div class="qr-btn" onclick="generateQRCode()">
+                <img src="./images/icon2.png" width="20"> Обновить QR-код
+            </div>
+            <div class="qr-btn" onclick="shareQRCode()">
+                <img src="./images/icon3.png" width="20"> Поделиться
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let walletAddress = "your_wallet_address_here";  // свой кошелек
+
+        function generateQRCode() {
+            document.getElementById("qrcode").innerHTML = "";
+            let qr = new QRCode(document.getElementById("qrcode"), {
+                text: walletAddress + "?" + new Date().getTime(),
+                width: 200,
+                height: 200
+            });
+        }
+
+        function copyToClipboard() {
+            navigator.clipboard.writeText(walletAddress).then(() => {
+                alert("Код скопирован!");
+            });
+        }
+
+        function shareQRCode() {
+            if (navigator.share) {
+                navigator.share({
+                    title: "QR-код для пополнения",
+                    text: "Вот мой кошелек: " + walletAddress,
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                alert("Функция недоступна в этом браузере.");
+            }
+        }
+
+        // function goBack() {
+        //     window.location.href = "main.html"; // Возврат на главную страницу
+        // }
+
+        // Генерация QR-кода при загрузке страницы
+        generateQRCode();
+    </script>
+</body>
+</html>

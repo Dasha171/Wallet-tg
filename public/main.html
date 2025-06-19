@@ -1,0 +1,216 @@
+<!DOCTYPE html> 
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Телеграм Кошелек</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="balance-title">Мой баланс</div>
+        <div class="balance-container">
+            <span id="balance">$0.00</span>
+            <img src="./images/eye-open.png" id="eye-icon" class="eye-icon" width="24" height="24">
+        </div>
+        <small id="balance-change" style="color: var(--green);">+0.00% (+$0.00)</small>
+        <div class="buttons">
+            <div class="btn" onclick="window.location='main.html'">
+                <img src="./images/logoBalance.png" width="20"> Баланс
+            </div>
+            <div class="btn" onclick="window.location='money.html'">
+                <img src="./images/logoMoney2.png" width="20"> Пополнить
+            </div>
+            <div class="btn" onclick="window.location='replenish.html'">
+                <img src="./images/logoWallets.png" width="20"> Кошельки
+            </div>
+        </div>
+        <div class="balance-title">Список моих валют</div>
+        <div class="currencies" id="currencies-list"></div>
+        <div class="history-btn" id="open-history">
+            История пополнений
+            <img src="./images/weui_back-filled.png" width="10">
+        </div>
+    </div>
+
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                История пополнений
+                <span class="close-btn" id="close-history">&times;</span>
+            </div>
+            <div class="modal-body" id="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        let wallets = [];
+        let selectedCurrency = 'USD';
+        let previousBalance = 0;
+        let isBalanceHidden = false;
+
+        let lastTotalBalance = 0;
+        let lastBalanceChange = { percentage: 0, amount: 0 };
+
+        async function loadWalletsAndBalances() {
+            try {
+                const walletsRes = await fetch('/get-wallets');
+                wallets = await walletsRes.json();
+                
+                if (!wallets.length) {
+                    document.getElementById('balance').textContent = '$0.00';
+                    document.getElementById('balance-change').textContent = '+0.00% (+$0.00)';
+                    document.getElementById('currencies-list').innerHTML = '<div class="currency">Нет доступных кошельков</div>';
+                    return;
+                }
+
+                const walletIds = wallets.map(w => w.id);
+                const balanceRes = await fetch('/balance/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ wallet_ids: walletIds })
+                });
+                const balances = await balanceRes.json();
+
+                const totalBalance = calculateTotalBalance(balances, selectedCurrency);
+                const balanceChange = calculateBalanceChange(totalBalance, previousBalance);
+
+                updateBalanceDisplay(totalBalance, balanceChange);
+                updateCurrenciesList(balances);
+                updateHistoryList();
+
+                previousBalance = totalBalance;
+            } catch (error) {
+                console.error('Ошибка загрузки баланса:', error);
+            }
+        }
+
+        function calculateTotalBalance(balances, targetCurrency) {
+            let total = 0;
+            for (const [currency, amount] of Object.entries(balances)) {
+                if (currency === targetCurrency) {
+                    total += amount;
+                } else {
+                    total += amount * getConversionRate(currency, targetCurrency);
+                }
+            }
+            return total;
+        }
+
+        function getConversionRate(fromCurrency, toCurrency) {
+            const rates = {
+                'USD': 1,
+                'EUR': 0.92,
+                'BTC': 50000,
+                'ETH': 3000
+            };
+            return rates[fromCurrency] / rates[toCurrency];
+        }
+
+        function calculateBalanceChange(currentBalance, previousBalance) {
+            if (previousBalance === 0) return { percentage: 0, amount: 0 };
+            const change = currentBalance - previousBalance;
+            const percentage = (change / previousBalance) * 100;
+            return {
+                percentage: percentage.toFixed(2),
+                amount: change.toFixed(2)
+            };
+        }
+
+        function updateBalanceDisplay(totalBalance, balanceChange) {
+            lastTotalBalance = totalBalance;
+            lastBalanceChange = balanceChange;
+
+            const balanceElement = document.getElementById('balance');
+            const changeElement = document.getElementById('balance-change');
+            
+            if (isBalanceHidden) {
+                balanceElement.textContent = '*****';
+                changeElement.textContent = '';
+            } else {
+                balanceElement.textContent = `${selectedCurrency} ${totalBalance.toFixed(2)}`;
+                const sign = balanceChange.percentage >= 0 ? '+' : '';
+                changeElement.textContent = `${sign}${balanceChange.percentage}% (${sign}${selectedCurrency} ${balanceChange.amount})`;
+                changeElement.style.color = balanceChange.percentage >= 0 ? 'var(--green)' : '#ff6666';
+            }
+        }
+
+        function updateCurrenciesList(balances) {
+            const currenciesList = document.getElementById('currencies-list');
+            currenciesList.innerHTML = '';
+            
+            for (const [currency, amount] of Object.entries(balances)) {
+                if (amount > 0) {
+                    const currencyElement = document.createElement('div');
+                    currencyElement.className = 'currency';
+                    currencyElement.innerHTML = `
+                        <img src="./images/${currency.toLowerCase()}.png" width="30">
+                        <span>${currency}</span>
+                        <span>${amount.toFixed(2)}</span>
+                    `;
+                    currencyElement.onclick = () => {
+                        selectedCurrency = currency;
+                        loadWalletsAndBalances();
+                    };
+                    currenciesList.appendChild(currencyElement);
+                }
+            }
+        }
+
+        function updateHistoryList() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            const history = [
+                { wallet: 'Кошелек 1', date: '21 янв. 2025 г.', amount: 0.0008, currency: 'BTC' },
+                { wallet: 'Кошелек 2', date: '11 янв. 2025 г.', amount: 1.000, currency: 'USD' }
+            ];
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'wallet-item';
+                historyItem.innerHTML = `
+                    <div class="wallet-info">
+                        <div class="wallet-name">${item.wallet}</div>
+                        <div class="wallet-date">${item.date}</div>
+                    </div>
+                    <div class="wallet-amount">+${item.amount} <span class="currency-${item.currency.toLowerCase()}">${item.currency === 'BTC' ? '₿' : '$'}</span></div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        document.getElementById("eye-icon").addEventListener("click", function () {
+            isBalanceHidden = !isBalanceHidden;
+            const balance = document.getElementById("balance");
+            const changeElement = document.getElementById("balance-change");
+
+            if (isBalanceHidden) {
+                balance.textContent = "*****";
+                changeElement.textContent = "";
+                this.src = "./images/eye-closed.png";
+            } else {
+                balance.textContent = `${selectedCurrency} ${lastTotalBalance.toFixed(2)}`;
+                const sign = lastBalanceChange.percentage >= 0 ? '+' : '';
+                changeElement.textContent = `${sign}${lastBalanceChange.percentage}% (${sign}${selectedCurrency} ${lastBalanceChange.amount})`;
+                changeElement.style.color = lastBalanceChange.percentage >= 0 ? 'var(--green)' : '#ff6666';
+                this.src = "./images/eye-open.png";
+            }
+        });
+
+        document.getElementById("open-history").addEventListener("click", function () {
+            document.getElementById("history-modal").classList.add("open");
+        });
+
+        document.getElementById("close-history").addEventListener("click", function () {
+            document.getElementById("history-modal").classList.remove("open");
+        });
+
+        loadWalletsAndBalances();
+    </script>
+</body>
+</html>

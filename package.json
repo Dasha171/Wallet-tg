@@ -1,0 +1,13 @@
+{
+    "name": "wallet",
+    "version": "1.0.0",
+    "description": "Telegram bot for wallet",
+    "main": "bot.js",
+    "scripts": {
+      "start": "node bot.js"
+    },
+    "dependencies": {
+      "node-telegram-bot-api": "^0.50.0"
+    }
+  }
+  

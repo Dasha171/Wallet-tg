@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Импортировать Кошелек</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+  </script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .input-wrapper {
+      position: relative;
+      margin-top: 20px;
+    }
+    #clearInput {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  height: 100%; /* ДОБАВИЛ */
+  display: flex; /* ДОБАВИЛ */
+  align-items: center; /* ДОБАВИЛ */
+}
+    #clearInput i {
+      font-size: 20px;
+      color: #999;
+    }
+    .add-wallet-btn {
+      margin-top: 40px;
+    }
+
+    #togglePersonalImport {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; /* ДОБАВИЛ */
+  align-items: center; /* ДОБАВИЛ */
+  gap: 8px; /* Расстояние между иконкой и текстом */
+  justify-content: center;
+}
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="balance-title2" style="text-align: center;">Введите данные, чтобы импортировать кошелёк</div>
+
+  <div class="input-wrapper">
+    <input type="text" id="importInput" placeholder="Введите SEED фразу"
+      style="width: 100%; padding: 15px; border-radius: 10px; background: var(--card-bg); color: var(--text-color); border: none; font-size: 16px;">
+    <button id="clearInput">
+      <i class="fas fa-times" style="margin-bottom: 22px;"></i>
+    </button>
+    <small style="color: #ff6666; display: block; margin-top: 8px;">* Никому не показывайте свой SEED или ключ кошелька</small>
+  </div>
+
+  <div style="text-align: center; margin: 30px 0 20px;">
+    <h6 style="margin: 10px 0; color: var(--text-color);">или</h6>
+    <button id="toggleImportMode" style="background: none; border: none; color: var(--text-color); font-size: 18px; display: flex; align-items: center; gap: 8px; margin: 0 auto; cursor: pointer;">
+      <i class="fas fa-key" style="color: #ffb703;"></i>
+      <h4 id="toggleText" class="fade show" style="margin: 0;">Ввести ключ кошелька</h4>
+    </button>
+  </div>
+
+  <div style="display: flex; justify-content: center; margin-top: 30px;">
+    <button id="togglePersonalImport" style="background: none; border: none; color: var(--text-color); font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+      <i class="fas fa-user" style="color: #ffb703; font-size: 20px;"></i>
+      <h3 id="toggleText" class="fade show" style="margin: 0;">Персональные данные</h3>
+    </button>
+  </div>
+  
+      
+  </div>
+
+  <div class="container">
+    <button class="add-wallet-btn"  id="importWalletBtn" >Добавить</button>
+  </div>
+</div>
+
+<script>
+    let currentMode = 'seed'; // 'seed', 'private', 'personal'
+    const input = document.getElementById('importInput');
+    const toggleText = document.querySelector('#toggleImportMode h4');
+    const personalText = document.querySelector('#togglePersonalImport h3');
+  
+    document.getElementById('clearInput').addEventListener('click', () => {
+      input.value = '';
+    });
+  
+    function updateMode(newMode, placeholder, toggleLabel) {
+      currentMode = newMode;
+      input.placeholder = placeholder;
+      toggleText.textContent = toggleLabel;
+    }
+  
+    document.getElementById('toggleImportMode').addEventListener('click', () => {
+      if (currentMode === 'seed') {
+        updateMode('private', 'Введите ключ', 'Ввести SEED фразу');
+      } else {
+        updateMode('seed', 'Введите SEED фразу', 'Ввести ключ кошелька');
+      }
+    });
+  
+    document.getElementById('togglePersonalImport').addEventListener('click', () => {
+      updateMode('personal', 'Введите персональные данные', 'Ввести SEED фразу');
+      personalText.textContent = 'Персональные данные';
+    });
+  
+    // автоматическое определение режима по паттерну
+    input.addEventListener('input', () => {
+      const value = input.value.trim();
+      if (value.split(' ').length >= 12) {
+        currentMode = 'seed';
+      } else if (/^[0-9a-fA-F]{64}$/.test(value)) {
+        currentMode = 'private';
+      } else {
+        currentMode = 'personal';
+      }
+    });
+  
+    document.getElementById('importWalletBtn').addEventListener('click', async () => {
+      const data = input.value.trim();
+      if (!data) {
+        alert('Пожалуйста, заполните поле.');
+        return;
+      }
+  
+      let url = '';
+      let payload = {};
+  
+      if (currentMode === 'seed') {
+        url = '/add-wallet/import-wallet/seed-phrase';
+        payload = { seed_phrase: data };
+      } else if (currentMode === 'private') {
+        url = '/add-wallet/import-wallet/private-key';
+        payload = { private_key: data };
+      } else {
+        url = '/add-wallet/import-wallet';
+        payload = { data: data };
+      }
+  
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+  
+        const result = await response.json();
+        if (response.ok && result.status === 0) {
+          alert('Кошелек успешно импортирован!');
+          window.location.href = '/wallets';
+        } else {
+          alert('Ошибка при импорте: ' + (result.message || 'Неизвестная ошибка'));
+        }
+      } catch (error) {
+        alert('Произошла ошибка: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>

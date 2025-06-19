@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Создать Кошелек</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+  </script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+  <style>
+    .clear-input-btn {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .clear-input-btn i {
+      font-size: 20px;
+      color: #999;
+    }
+
+    #privateKeyModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #privateKeyModal .modal-content {
+      background-color: #141414;
+      color: white;
+      border-radius: 10px;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+    }
+
+    #privateKeyModal .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="balance-title2">Создайте кошелек</div>
+
+<!-- название кошелька -->
+<div class="input-wrapper" style="position: relative; margin-top: 20px;">
+    <input type="text" id="walletNameInput" placeholder="Название кошелька"
+      style="width: 100%; padding: 15px; border-radius: 10px; background: var(--card-bg); color: var(--text-color); border: none; font-size: 16px;">
+    <button type="button" id="clearWalletNameInput" class="clear-input-btn">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- SEED input -->
+  <div class="input-wrapper" style="position: relative; margin-top: 20px;">
+    <input type="text" id="seedInput" placeholder="Придумайте seed фразу"
+      style="width: 100%; padding: 15px; border-radius: 10px; background: var(--card-bg); color: var(--text-color); border: none; font-size: 16px;">
+    <button type="button" id="clearSeedInput" class="clear-input-btn">
+      <i class="fas fa-times" style="margin-bottom: 17px;"></i>
+    </button>
+    <small style="color: #ff6666;">* Никому не показывайте свой SEED</small>
+  </div>
+
+  <!-- повтор SEED -->
+  <div class="input-wrapper" style="position: relative; margin-top: 20px;">
+    <input type="text" id="seedConfirmInput" placeholder="Введите повторно"
+      style="width: 100%; padding: 15px; border-radius: 10px; background: var(--card-bg); color: var(--text-color); border: none; font-size: 16px;">
+    <button type="button" id="clearSeedConfirmInput" class="clear-input-btn">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <div style="text-align: center; margin: 20px 0 10px;">
+    <h6 style="margin: 10px 0; color: var(--text-color);">или</h6>
+    <button id="generateBtn" style="background: none; border: none; color: var(--text-color); font-size: 18px; display: flex; align-items: center; gap: 8px; margin: 0 auto; cursor: pointer;">
+      <i class="fas fa-lightbulb" style="color: #ffb703; font-size: 24px;"></i>
+      <h4 style="margin: 0;">Сгенерировать</h4>
+    </button>
+  </div>
+
+  <button class="add-wallet-btn" id="createWalletBtn" style="margin-top: 20px;">
+    Создать
+  </button>
+</div>
+
+<!-- модальное окно всплывания -->
+<div id="privateKeyModal">
+  <div class="modal-content">
+    <div class="close-btn" onclick="closePrivateKeyModal()">
+      <i class="fas fa-times"></i>
+    </div>
+    <h3 id="walletNameDisplay"></h3>
+    <p style="margin-top: 20px;">Ваш приватный ключ:</p>
+    <p id="privateKeyDisplay" style="word-break: break-all;"></p>
+  </div>
+</div>
+
+<script>
+    const bip39Words = [
+      "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse",
+      "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", "across", "act",
+      "action", "actor", "actress", "actual", "adapt", "add", "addict", "address", "adjust", "admit",
+      "adult", "advance", "advice", "aerobic", "affair", "afford", "afraid", "again", "age", "agent"
+    ];
+  
+    function generateSeedPhrase() {
+      const shuffled = [...bip39Words].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 12).join(' ');
+    }
+  
+    function generatePrivateKeyFromSeed(seed) {
+      const hash = CryptoJS.SHA256(seed);
+      return hash.toString(CryptoJS.enc.Hex);
+    }
+  
+    function showPrivateKeyModal(name, key) {
+      document.getElementById('walletNameDisplay').innerText = name;
+      document.getElementById('privateKeyDisplay').innerText = key;
+      document.getElementById('privateKeyModal').style.display = 'flex';
+    }
+  
+    function closePrivateKeyModal() {
+      document.getElementById('privateKeyModal').style.display = 'none';
+    }
+  
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const seed = generateSeedPhrase();
+      document.getElementById('seedInput').value = seed;
+      document.getElementById('seedConfirmInput').value = seed;
+    });
+  
+    document.getElementById('clearSeedInput').addEventListener('click', () => {
+      document.getElementById('seedInput').value = '';
+    });
+  
+    document.getElementById('clearSeedConfirmInput').addEventListener('click', () => {
+      document.getElementById('seedConfirmInput').value = '';
+    });
+  
+    document.getElementById('clearWalletNameInput').addEventListener('click', () => {
+      document.getElementById('walletNameInput').value = '';
+    });
+  
+    document.getElementById('createWalletBtn').addEventListener('click', async () => {
+      const name = document.getElementById('walletNameInput').value.trim();
+      const seed = document.getElementById('seedInput').value.trim();
+      const seedConfirm = document.getElementById('seedConfirmInput').value.trim();
+  
+      if (!name || !seed || !seedConfirm) {
+        alert('Пожалуйста, заполните все поля.');
+        return;
+      }
+  
+      if (seed !== seedConfirm) {
+        alert('Фразы не совпадают!');
+        return;
+      }
+  
+      const privateKey = generatePrivateKeyFromSeed(seed);
+  
+      try {
+        // Создание кошелька
+        const createResponse = await fetch('/add-wallet/create-wallet', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+  
+        if (!createResponse.ok) throw new Error('Ошибка при создании кошелька');
+  
+        // Импорт через seed-фразу
+        const seedResponse = await fetch('/add-wallet/import-wallet/seed-phrase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ seed_phrase: seed })
+        });
+  
+        if (!seedResponse.ok) throw new Error('Ошибка при импорте через seed');
+  
+        // Импорт через приватный ключ
+        const pkResponse = await fetch('/add-wallet/import-wallet/private-key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ private_key: privateKey })
+        });
+  
+        if (!pkResponse.ok) throw new Error('Ошибка при импорте приватного ключа');
+  
+        // показать приватный ключ
+        showPrivateKeyModal(name, privateKey);
+      } catch (error) {
+        alert('Ошибка: ' + error.message);
+      }
+    });
+  </script>
+  
+
+</body>
+</html>

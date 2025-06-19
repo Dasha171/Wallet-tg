@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Replenish</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        let user = tg.initDataUnsafe.user;
+        let user_id = user.id;
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="wallet-section">
+            <div class="balance-title">Мои кошельки</div>
+            <div id="wallets-carousel" class="wallets-carousel"></div>
+            <div class="carousel-dots" id="carousel-dots"></div>
+            <button class="add-wallet-btn">Добавить кошелек</button>
+        </div>
+
+        <div class="select-wallet">
+            <div class="balance-title">Валюты на кошельке</div>
+            <select id="wallet-selector"></select>
+        </div>
+
+        <div class="currency-box" onclick="toggleModal()">
+            <img src="./images/logoAct.png" alt="Logo" class="currency-logo">
+            <h3>Другие активы</h3>
+            <img src="./images/weui_back-filled2.png" alt="Arrow" class="currency-arrow">
+        </div>
+        
+        <!-- Модальное окно "Другие активы" -->
+        <div class="currency-modal" id="currency-modal">
+            <div class="modal-header">
+                <h2>Выберите валюту</h2>
+                <span class="close-btn" onclick="toggleModal()">&times;</span>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search" id="currency-search" onkeyup="filterCurrencies()">
+                <img src="./images/search.png" alt="Поиск" class="search-icon">
+            </div>
+            <div class="currency-list" id="currency-list">
+                <div class="currency-item">
+                    <i class="fab fa-bitcoin"></i>
+                    <span>Bitcoin (BTC)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>US Dollar (USD)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fas fa-euro-sign"></i>
+                    <span>Euro (EUR)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fab fa-ethereum"></i>
+                    <span>Ethereum (ETH)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fas fa-pound-sign"></i>
+                    <span>British Pound (GBP)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fas fa-yen-sign"></i>
+                    <span>Japanese Yen (JPY)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fas fa-ruble-sign"></i>
+                    <span>Russian Ruble (RUB)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fas fa-won-sign"></i>
+                    <span>South Korean Won (KRW)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fas fa-lira-sign"></i>
+                    <span>Turkish Lira (TRY)</span>
+                </div>
+                <div class="currency-item">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span>Indian Rupee (INR)</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="add-wallet-modal" class="modal">
+        <div class="modal-header">
+            <span style="font-size: 18px; font-weight: bold;">Добавить кошелёк</span>
+            <span class="close-btn" onclick="toggleAddWalletModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="wallet-action" onclick="location.href='addWallet.html'">
+                <img src="./images/walletadd.png" class="wallet-icon">
+                <div class="wallet-texts">
+                    <div class="wallet-title">Создать кошелёк</div>
+                    <div class="wallet-subtitle">Создание нового кошелька с SEED фразой</div>
+                </div>
+                <img src="./images/arrow.png" class="arrow-icon">
+            </div>
+            <div class="wallet-action" onclick="location.href='importWallet.html'">
+                <img src="./images/importwallet.png" class="wallet-icon">
+                <div class="wallet-texts">
+                    <div class="wallet-title">Импортировать кошелёк</div>
+                    <div class="wallet-subtitle">Использование SEED фразы или ключа для импортирования</div>
+                </div>
+                <img src="./images/arrow.png" class="arrow-icon">
+            </div>
+        </div>
+    </div>
+    <style>
+    .currency-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .currency-item:hover {
+        background-color: #f5f5f5;
+    }
+
+    .currency-item i {
+        font-size: 24px;
+        margin-right: 15px;
+        width: 30px;
+        text-align: center;
+    }
+
+    .currency-item span {
+        font-size: 16px;
+        color: #333;
+    }
+
+    /* библиотека цевтов */
+    .fa-bitcoin { color: #f7931a; }
+    .fa-ethereum { color: #627eea; }
+    .fa-dollar-sign { color: #2ecc71; }
+    .fa-euro-sign { color: #3498db; }
+    .fa-pound-sign { color: #e74c3c; }
+    .fa-yen-sign { color: #9b59b6; }
+    .fa-ruble-sign { color: #e67e22; }
+    .fa-won-sign { color: #1abc9c; }
+    .fa-lira-sign { color: #34495e; }
+    .fa-rupee-sign { color: #27ae60; }
+    </style>
+
+    <script>
+        
+        const toggleModal = () => document.getElementById('currency-modal').classList.toggle('open');
+        const toggleAddWalletModal = () => document.getElementById("add-wallet-modal").classList.toggle("open");
+
+        document.querySelector(".add-wallet-btn").addEventListener("click", toggleAddWalletModal);
+
+        const loadWallets = async () => {
+            try {
+                const res = await fetch('/get-wallets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: user_id })
+});
+                const wallets = await res.json();
+                if (!wallets.length) return;
+
+                const walletContainer = document.getElementById('wallets-carousel');
+                const dotsContainer = document.getElementById('carousel-dots');
+                const walletSelect = document.getElementById('wallet-selector');
+
+                const walletIds = wallets.map(w => w.id);
+                const balanceRes = await fetch('/balance/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ wallet_ids: walletIds, user_id: user_id })
+});
+
+                const balances = await balanceRes.json();
+
+                wallets.forEach((wallet, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'wallet-card-item';
+                    card.innerHTML = `
+                        <div class="wallet-header">
+                            <span>${wallet.name}</span>
+                            <img src="./images/eye.png" class="eye-icon" onclick="toggleKeyVisibility('${wallet.id}')">
+                        </div>
+                        <div class="wallet-key" id="key-${wallet.id}">**** **** **** ${wallet.key.slice(-4)}</div>
+                        <div class="wallet-footer">
+                            <span>${wallet.created_at}</span>
+                            <span>${wallet.id.slice(0, 3)}</span>
+                        </div>
+                    `;
+                    walletContainer.appendChild(card);
+
+                    const dot = document.createElement('span');
+                    dot.className = 'dot';
+                    if (idx === 0) dot.classList.add('active');
+                    dotsContainer.appendChild(dot);
+
+                    const option = document.createElement('option');
+                    option.value = wallet.id;
+                    option.textContent = wallet.name;
+                    walletSelect.appendChild(option);
+                });
+
+                displayCurrencies(balances);
+            } catch (e) {
+                console.error('Ошибка загрузки кошельков:', e);
+            }
+        };
+
+        function toggleKeyVisibility(id) {
+            const el = document.getElementById(`key-${id}`);
+            el.textContent = el.textContent.includes('*') ? wallets.find(w => w.id === id).key : '**** **** **** ' + wallets.find(w => w.id === id).key.slice(-4);
+        }
+
+        function displayCurrencies(balances) {
+            const list = document.getElementById('currency-list');
+            list.innerHTML = '';
+            for (const [currency, amount] of Object.entries(balances)) {
+                const item = document.createElement('div');
+                item.className = 'currency-item';
+                item.innerHTML = `<img src="./images/${currency.toLowerCase()}.png" alt="${currency}"> ${currency}: ${amount}`;
+                list.appendChild(item);
+            }
+        }
+
+        function filterCurrencies() {
+            let input = document.getElementById('currency-search').value.toLowerCase();
+            let items = document.querySelectorAll('.currency-item');
+            items.forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(input) ? 'flex' : 'none';
+            });
+        }
+
+        window.onload = loadWallets;
+        
+    </script>
+</body>
+</html>
